@@ -1,19 +1,16 @@
 # What-if Pricing Scenario Simulation
-### IT2032 - Modeling and Simulation | BSCS 601
+### Modeling and Simulation | BSCS 601
 
-A business simulation tool that models how different selling prices affect a small retail store's revenue, profit, and profit margin.
+A business simulation with 3 versions showing the effect of pricing on profit.
 
-## How to Run
+## Versions
 
-1. Make sure Python 3 is installed
-2. Install dependencies:
-   pip install -r requirements.txt
-3. Run the simulation:
-   python3 simulation.py  ← Mac
-   python simulation.py   ← Windows
+| Version | Tech | How to Run |
+|---------|------|------------|
+| version1-terminal | Python + Rich | python3 version1-terminal/simulation.py |
+| version2-gui | Python + Tkinter | python3 version2-gui/simulation.py |
+| version3-browser | HTML/CSS/JS | Open version3-browser/index.html in browser |
 
-## Features
-- Input product cost, units sold, and fixed expenses
-- Test multiple pricing scenarios
-- See profit/loss results in a table
-- View 3 charts: Revenue vs Cost, Profit/Loss, and Profit Margin
+## Setup
+
+pip install -r requirements.txt
