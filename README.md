@@ -7,11 +7,11 @@ for different interfaces.
 
 ## 📁 Project Structure
 pricing-simulation/
-├── v1-terminal/
+├── v1/
 │   └── simulation.py        ← Rich terminal UI with colored tables and charts
-├── v2-gui/
+├── v2/
 │   └── simulation.py        ← Tkinter GUI window with interactive charts
-├── v3-browser/
+├── v3/
 │   └── index.html           ← Browser-based app (no installation needed)
 ├── requirements.txt         ← Python libraries needed
 └── README.md                ← You are here
@@ -78,13 +78,13 @@ pip install -r requirements.txt
 **5. Run the versions**
 ```bash
 # Version 1 - Rich Terminal
-python v1-terminal/simulation.py
+python v1/simulation.py
 
 # Version 2 - GUI Window (works best on Windows)
-python v2-gui/simulation.py
+python v2/simulation.py
 
 # Version 3 - Browser (just open the file)
-start v3-browser/index.html
+start v3/index.html
 ```
 
 ## 🖥️ Version Descriptions
