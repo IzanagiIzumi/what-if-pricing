@@ -27,7 +27,7 @@ pricing-simulation/
 
 ## 🛠️ Setup Instructions
 
-### 🍎 Mac (M1)
+### 🍎 Mac
 
 **1. Open Terminal**
 Press CMD + Space, type Terminal, hit Enter.
