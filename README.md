@@ -7,11 +7,11 @@ for different interfaces.
 
 ## 📁 Project Structure
 pricing-simulation/
-├── version1-terminal/
+├── v1-terminal/
 │   └── simulation.py        ← Rich terminal UI with colored tables and charts
-├── version2-gui/
+├── v2-gui/
 │   └── simulation.py        ← Tkinter GUI window with interactive charts
-├── version3-browser/
+├── v3-browser/
 │   └── index.html           ← Browser-based app (no installation needed)
 ├── requirements.txt         ← Python libraries needed
 └── README.md                ← You are here
