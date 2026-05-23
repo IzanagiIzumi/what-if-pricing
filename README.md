@@ -52,7 +52,7 @@ python3 v1/simulation.py
 python3 v2/simulation.py
 
 # Version 3 - Browser (just open the file)
-open v3-browser/index.html
+open v3/index.html
 ```
 
 ### 🪟 Windows
