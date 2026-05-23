@@ -46,13 +46,13 @@ pip3 install -r requirements.txt
 **4. Run the versions**
 ```bash
 # Version 1 - Rich Terminal
-python3 version1-terminal/simulation.py
+python3 v1/simulation.py
 
 # Version 2 - GUI (may not display correctly on Mac M1)
-python3 version2-gui/simulation.py
+python3 v2/simulation.py
 
 # Version 3 - Browser (just open the file)
-open version3-browser/index.html
+open v3-browser/index.html
 ```
 
 ### 🪟 Windows
@@ -78,13 +78,13 @@ pip install -r requirements.txt
 **5. Run the versions**
 ```bash
 # Version 1 - Rich Terminal
-python version1-terminal/simulation.py
+python v1-terminal/simulation.py
 
 # Version 2 - GUI Window (works best on Windows)
-python version2-gui/simulation.py
+python v2-gui/simulation.py
 
 # Version 3 - Browser (just open the file)
-start version3-browser/index.html
+start v3-browser/index.html
 ```
 
 ## 🖥️ Version Descriptions
