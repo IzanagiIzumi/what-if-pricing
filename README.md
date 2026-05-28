@@ -53,6 +53,8 @@ python3 v2/simulation.py
 
 # Version 3 - Browser (just open the file)
 open v3/index.html
+
+
 ```
 
 ### 🪟 Windows
@@ -84,7 +86,7 @@ python v1/simulation.py
 python v2/simulation.py
 
 # Version 3 - Browser (just open the file)
-start v3/index.html
+open v3/index.html
 ```
 
 ## 🖥️ Version Descriptions
