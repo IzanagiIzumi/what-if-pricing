@@ -136,7 +136,7 @@ nav {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 12px; padding: 4px;
-  max-width: 500px; margin: 32px auto 0;
+  max-width: 340px; margin: 32px auto 0;
 }
 .tab-btn {
   flex: 1; padding: 10px 16px;
@@ -167,7 +167,7 @@ nav {
 .card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 16px; padding: 26px 30px;
+  border-radius: 16px; padding: 22px 22px;
   position: relative; overflow: hidden;
   margin-bottom: 20px;
 }
@@ -215,17 +215,19 @@ nav {
 ══════════════════════════════ */
 .slider-field { margin-bottom: 14px; }
 .slider-row {
-  display: flex; align-items: center; gap: 12px;
+  display: flex; align-items: center; gap: 8px;
 }
 .slider-label {
   font-size: 0.72rem; color: var(--muted);
   text-transform: uppercase; letter-spacing: 0.06em;
-  font-weight: 500; width: 160px; flex-shrink: 0;
+  font-weight: 500; min-width: 130px; width: 130px; flex-shrink: 0;
+  line-height: 1.3;
 }
 .slider-val {
   font-family: 'DM Mono', monospace;
   font-size: 0.88rem; color: var(--accent3);
-  width: 80px; text-align: right; flex-shrink: 0;
+  min-width: 72px; width: 72px; text-align: right; flex-shrink: 0;
+  white-space: nowrap;
 }
 input[type="range"] {
   flex: 1; -webkit-appearance: none; appearance: none;
@@ -285,7 +287,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
 ══════════════════════════════ */
 .sim-layout {
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: 310px 1fr;
   gap: 18px;
 }
 .sim-controls-panel {
@@ -736,7 +738,6 @@ footer {
   <div class="tab-bar">
     <button class="tab-btn active" onclick="switchTab('sim')">🏪 Live Sim</button>
     <button class="tab-btn" onclick="switchTab('calc')">📊 Calculator</button>
-    <button class="tab-btn" onclick="switchTab('proposal')">📄 Proposal</button>
   </div>
 </div>
 
@@ -1013,111 +1014,6 @@ footer {
   </div>
 </div>
 
-<!-- ══════════════════════════════
-     TAB 3: PROPOSAL
-══════════════════════════════ -->
-<div class="section-panel" id="tab-proposal">
-
-  <div class="card fade-up" style="margin-bottom:20px;">
-    <div class="card-top-bar"></div>
-    <div class="card-title">📄 Project Proposal</div>
-
-    <div class="proposal-grid">
-
-      <div class="prop-section">
-        <div class="prop-title">🏪 Project Title</div>
-        <p class="prop-sub" style="font-size:1.05rem;color:var(--white);font-weight:600;margin-top:4px;">
-          PriceSim v3: Interactive Retail Pricing Simulation with Live Store Visualization
-        </p>
-        <p class="prop-sub" style="margin-top:6px;">
-          IT2032 Modeling and Simulation — John Raphael C. Alido, BSCS 601
-        </p>
-      </div>
-
-      <div class="divider"></div>
-
-      <div class="prop-section">
-        <div class="prop-title">📌 Overview</div>
-        <p class="prop-sub">
-          PriceSim v3 is an interactive browser-based simulation tool that models retail pricing decisions in a live animated store environment. Unlike static spreadsheet tools, this system visually simulates customer behavior — customers spawn, browse shelves, queue at the counter, and purchase items — while real-time metrics update instantly with every slider adjustment.
-        </p>
-      </div>
-
-      <div class="prop-section">
-        <div class="prop-title">🎯 Objectives</div>
-        <ul class="prop-list">
-          <li>Demonstrate how pricing decisions directly affect profit through an animated, observable simulation</li>
-          <li>Model customer arrival rates, queue dynamics, and purchase probability as controllable variables</li>
-          <li>Provide a multi-scenario calculator to compare up to 10 pricing strategies simultaneously</li>
-          <li>Include a break-even analysis tool to identify minimum viable pricing</li>
-          <li>Visualize real-time revenue, margin, and profit accumulation as the simulation runs</li>
-        </ul>
-      </div>
-
-      <div class="prop-section">
-        <div class="prop-title">🔬 Simulation Model</div>
-        <p class="prop-sub">
-          The live simulation models a discrete-event retail environment with the following parameters:
-        </p>
-        <ul class="prop-list" style="margin-top:10px;">
-          <li><strong style="color:var(--white)">Customer Arrival (λ)</strong> — Poisson-like spawn rate; customers appear at adjustable intervals</li>
-          <li><strong style="color:var(--white)">Purchase Probability (p)</strong> — Each customer decides to buy based on configurable probability, simulating price sensitivity</li>
-          <li><strong style="color:var(--white)">Service Rate (μ)</strong> — Checkout speed determines how fast the queue clears</li>
-          <li><strong style="color:var(--white)">Queue Dynamics</strong> — Customers wait in visible queue, then get served; overflow customers abandon purchase</li>
-          <li><strong style="color:var(--white)">Profit Accumulation</strong> — Each sale: Revenue += Price; Cost += (Cost/Unit + prorated Overhead)</li>
-        </ul>
-      </div>
-
-      <div class="prop-section">
-        <div class="prop-title">🏆 Comparison with Other Groups</div>
-        <div class="prop-compare">
-          <div class="comp-box">
-            <div class="comp-icon">🚂</div>
-            <div class="comp-title">Group A — Train Corridor</div>
-            <div class="comp-desc">Animated station queue with load balancing, zones, and a train that bypasses on overflow</div>
-          </div>
-          <div class="comp-box">
-            <div class="comp-icon">🚌</div>
-            <div class="comp-title">Group B — BusTerminal.sim</div>
-            <div class="comp-desc">3D terminal view with dispatch strategy sliders, throughput, profit/loss, and hourly charts</div>
-          </div>
-          <div class="comp-box ours">
-            <div class="comp-icon">🏪</div>
-            <div class="comp-title">Ours — PriceSim v3 ★</div>
-            <div class="comp-desc">Live animated store floor + pricing engine + multi-scenario calculator + break-even + real-time charts</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="prop-section">
-        <div class="prop-title">⚙️ Technical Stack</div>
-        <ul class="prop-list">
-          <li>Pure HTML5, CSS3, Vanilla JavaScript — zero dependencies beyond Chart.js</li>
-          <li>HTML5 Canvas API for animated store floor rendering at ~30fps</li>
-          <li>Chart.js for real-time and analytical charts</li>
-          <li>CSS custom properties + keyframe animations for UI motion</li>
-          <li>Runs entirely client-side; no server or internet connection required after load</li>
-        </ul>
-      </div>
-
-      <div class="prop-section">
-        <div class="prop-title">📊 Key Features</div>
-        <ul class="prop-list">
-          <li>Live animated store floor — customers spawn, walk to shelves, queue, pay, and exit</li>
-          <li>6 real-time sliders — price, cost, spawn rate, checkout speed, buy probability, overhead</li>
-          <li>Live profit meter with animated fill bar</li>
-          <li>Customer queue visualization with colored dots</li>
-          <li>Event log showing every significant sim event in real time</li>
-          <li>Multi-scenario pricing calculator with comparison table and 3 chart types</li>
-          <li>Break-even calculator updating live as you type</li>
-          <li>Pause / Resume / Reset simulation controls</li>
-          <li>Live 5-second revenue vs cost rolling chart</li>
-        </ul>
-      </div>
-
-    </div>
-  </div>
-</div>
 
 </div><!-- /main -->
 
