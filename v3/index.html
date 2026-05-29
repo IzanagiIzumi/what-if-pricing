@@ -3,313 +3,714 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>What-if Pricing Scenario Simulation</title>
+<title>PriceSim v3 — Live Retail Simulation</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800;900&family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
 <style>
-  :root {
-    --bg:       #1a1a2e;
-    --bg2:      #16213e;
-    --card:     #1e2a45;
-    --surface:  #252a40;
-    --accent:   #c8a97e;
-    --accent2:  #a07850;
-    --purple:   #8b6dd4;
-    --purple2:  #6c4fbf;
-    --white:    #f0f4ff;
-    --muted:    #8a9bc4;
-    --border:   rgba(255,255,255,0.07);
-    --green:    #22c55e;
-    --red:      #ef4444;
-    --yellow:   #facc15;
-  }
+:root {
+  --bg:       #0f0e0d;
+  --bg2:      #161412;
+  --card:     #1c1917;
+  --surface:  #262220;
+  --surface2: #2e2a27;
+  --accent:   #e8a84a;
+  --accent2:  #c8861e;
+  --accent3:  #f5c878;
+  --green:    #4ade80;
+  --red:      #f87171;
+  --yellow:   #fbbf24;
+  --blue:     #60a5fa;
+  --white:    #faf7f2;
+  --muted:    #8a7f74;
+  --border:   rgba(255,255,255,0.06);
+  --border2:  rgba(232,168,74,0.2);
+  --shelf:    #3d2e1e;
+  --shelf2:   #5c4530;
+  --floor:    #1a1510;
+  --tile:     #1f1a15;
+}
 
-  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-  html { scroll-behavior: smooth; }
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--white);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
 
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
-    color: var(--white);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 3px; }
 
-  /* NAV */
-  nav {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 20px 60px;
-    background: rgba(26,26,46,0.9);
-    backdrop-filter: blur(16px);
-    border-bottom: 1px solid var(--border);
-    position: sticky; top: 0; z-index: 100;
-  }
-  .nav-logo {
-    font-family: 'Sora', sans-serif;
-    font-weight: 700; font-size: 1.1rem;
-    display: flex; align-items: center; gap: 10px;
-  }
-  .logo-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 10px var(--accent);
-  }
-  .nav-right { font-size: 0.82rem; color: var(--muted); }
+/* ══════════════════════════════
+   NAV
+══════════════════════════════ */
+nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 48px;
+  background: rgba(15,14,13,0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 200;
+}
+.nav-logo {
+  display: flex; align-items: center; gap: 12px;
+  font-family: 'Sora', sans-serif; font-weight: 800; font-size: 1rem;
+}
+.logo-icon {
+  width: 32px; height: 32px;
+  background: var(--accent);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; color: #1a1208;
+}
+.nav-badge {
+  font-size: 0.72rem; color: var(--accent);
+  background: rgba(232,168,74,0.12);
+  border: 1px solid var(--border2);
+  padding: 3px 10px; border-radius: 20px;
+  font-family: 'DM Mono', monospace; font-weight: 500;
+}
+.nav-right { font-size: 0.78rem; color: var(--muted); font-family: 'DM Mono', monospace; }
 
-  /* HERO */
-  .hero {
-    padding: 72px 60px 56px;
-    text-align: center;
-    position: relative; overflow: hidden;
-  }
-  .hero::before {
-    content: '';
-    position: absolute; top: -150px; left: 50%; transform: translateX(-50%);
-    width: 800px; height: 500px;
-    background: radial-gradient(ellipse, rgba(139,109,212,0.18) 0%, transparent 70%);
-    pointer-events: none;
-  }
-  .hero-badge {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: rgba(139,109,212,0.12);
-    border: 1px solid rgba(139,109,212,0.3);
-    border-radius: 100px; padding: 6px 16px;
-    font-size: 0.78rem; color: var(--purple);
-    font-weight: 500; margin-bottom: 20px;
-  }
-  .hero-badge span {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: var(--purple); box-shadow: 0 0 8px var(--purple);
-  }
-  .hero h1 {
-    font-family: 'Sora', sans-serif;
-    font-size: clamp(2rem, 4vw, 3.2rem);
-    font-weight: 800; line-height: 1.1;
-    letter-spacing: -0.03em; margin-bottom: 16px;
-  }
-  .hero h1 em {
-    font-style: normal;
-    background: linear-gradient(135deg, var(--accent), var(--purple));
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  .hero p {
-    color: var(--muted); font-size: 1rem;
-    max-width: 480px; margin: 0 auto;
-    line-height: 1.7;
-  }
+/* ══════════════════════════════
+   HERO
+══════════════════════════════ */
+.hero {
+  padding: 60px 48px 48px;
+  text-align: center;
+  position: relative; overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
+  width: 700px; height: 400px;
+  background: radial-gradient(ellipse, rgba(232,168,74,0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem; color: var(--accent);
+  border: 1px solid var(--border2);
+  background: rgba(232,168,74,0.06);
+  border-radius: 20px; padding: 5px 14px;
+  margin-bottom: 22px;
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+.pulse-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(232,168,74,0.6); }
+  50% { box-shadow: 0 0 0 6px rgba(232,168,74,0); }
+}
+.hero h1 {
+  font-family: 'Sora', sans-serif;
+  font-size: clamp(2.2rem, 4.5vw, 3.6rem);
+  font-weight: 900; line-height: 1.05;
+  letter-spacing: -0.04em; margin-bottom: 18px;
+}
+.hero h1 em {
+  font-style: normal;
+  background: linear-gradient(135deg, var(--accent), var(--accent3));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-sub {
+  color: var(--muted); font-size: 1.02rem;
+  max-width: 520px; margin: 0 auto;
+  line-height: 1.75;
+}
 
-  /* MAIN */
-  .main {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 0 60px 80px;
-    display: flex; flex-direction: column; gap: 24px;
-  }
+/* ══════════════════════════════
+   SECTION TABS
+══════════════════════════════ */
+.tab-bar {
+  display: flex; gap: 4px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px; padding: 4px;
+  max-width: 500px; margin: 32px auto 0;
+}
+.tab-btn {
+  flex: 1; padding: 10px 16px;
+  background: none; border: none;
+  border-radius: 9px;
+  color: var(--muted); cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.85rem; font-weight: 600;
+  transition: all 0.2s;
+}
+.tab-btn.active {
+  background: var(--accent);
+  color: #1a1208;
+  box-shadow: 0 2px 12px rgba(232,168,74,0.3);
+}
+.tab-btn:not(.active):hover { color: var(--white); }
 
-  /* CARDS */
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px; padding: 28px 32px;
-    position: relative; overflow: hidden;
-  }
-  .card::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0; height: 2px;
-    background: linear-gradient(90deg, var(--purple), var(--accent));
-    opacity: 0; transition: opacity 0.3s;
-  }
-  .card:focus-within::before { opacity: 1; }
+/* ══════════════════════════════
+   MAIN LAYOUT
+══════════════════════════════ */
+.main { max-width: 1180px; margin: 0 auto; padding: 0 48px 80px; }
+.section-panel { display: none; padding-top: 28px; }
+.section-panel.active { display: block; }
 
-  .card-title {
-    font-family: 'Sora', sans-serif;
-    font-size: 0.82rem; font-weight: 700;
-    color: var(--yellow); margin-bottom: 20px;
-    display: flex; align-items: center; gap: 8px;
-    text-transform: uppercase; letter-spacing: 0.07em;
-  }
+/* ══════════════════════════════
+   CARDS
+══════════════════════════════ */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px; padding: 26px 30px;
+  position: relative; overflow: hidden;
+  margin-bottom: 20px;
+}
+.card-top-bar {
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent3));
+  opacity: 0; transition: opacity 0.3s;
+}
+.card:hover .card-top-bar { opacity: 1; }
+.card-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 0.75rem; font-weight: 700;
+  color: var(--accent); margin-bottom: 18px;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  display: flex; align-items: center; gap: 8px;
+}
 
-  /* INPUTS */
-  .inputs-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-  }
-  .field label {
-    display: block; font-size: 0.75rem; color: var(--muted);
-    font-weight: 500; margin-bottom: 8px;
-    text-transform: uppercase; letter-spacing: 0.05em;
-  }
-  .field input {
-    width: 100%; background: var(--surface);
-    border: 1.5px solid rgba(255,255,255,0.08);
-    border-radius: 10px; padding: 12px 16px;
-    color: var(--white); font-family: 'DM Sans', sans-serif;
-    font-size: 0.95rem; outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-  .field input:focus {
-    border-color: var(--purple);
-    box-shadow: 0 0 0 3px rgba(139,109,212,0.15);
-  }
-  .field input::placeholder { color: rgba(138,155,196,0.4); }
+/* ══════════════════════════════
+   FORM FIELDS
+══════════════════════════════ */
+.inputs-grid {
+  display: grid; grid-template-columns: repeat(3,1fr); gap: 14px;
+}
+.field label {
+  display: block; font-size: 0.72rem; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.06em;
+  margin-bottom: 7px; font-weight: 500;
+}
+.field input {
+  width: 100%; background: var(--surface);
+  border: 1.5px solid rgba(255,255,255,0.07);
+  border-radius: 10px; padding: 11px 15px;
+  color: var(--white); font-family: 'DM Mono', monospace;
+  font-size: 0.95rem; outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.field input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(232,168,74,0.12);
+}
+.field input::placeholder { color: rgba(138,127,116,0.4); }
 
-  /* SCENARIO CONTROLS */
-  .scenario-header {
-    display: flex; align-items: center;
-    justify-content: space-between; margin-bottom: 20px;
-  }
-  .scenario-ctrl {
-    display: flex; align-items: center; gap: 10px;
-  }
-  .scenario-ctrl label {
-    font-size: 0.75rem; color: var(--muted);
-    text-transform: uppercase; letter-spacing: 0.05em;
-  }
-  .scenario-ctrl input {
-    width: 60px; background: var(--surface);
-    border: 1.5px solid rgba(255,255,255,0.08);
-    border-radius: 8px; padding: 8px 10px;
-    color: var(--white); font-family: 'DM Sans', sans-serif;
-    font-size: 0.9rem; text-align: center; outline: none;
-    transition: border-color 0.2s;
-  }
-  .scenario-ctrl input:focus { border-color: var(--purple); }
-  .btn-set {
-    background: rgba(139,109,212,0.15);
-    border: 1px solid rgba(139,109,212,0.3);
-    color: var(--purple); border-radius: 8px;
-    padding: 8px 16px; font-family: 'DM Sans', sans-serif;
-    font-size: 0.82rem; font-weight: 600;
-    cursor: pointer; transition: background 0.2s;
-  }
-  .btn-set:hover { background: rgba(139,109,212,0.28); }
+/* ══════════════════════════════
+   SLIDER FIELD
+══════════════════════════════ */
+.slider-field { margin-bottom: 14px; }
+.slider-row {
+  display: flex; align-items: center; gap: 12px;
+}
+.slider-label {
+  font-size: 0.72rem; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.06em;
+  font-weight: 500; width: 160px; flex-shrink: 0;
+}
+.slider-val {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.88rem; color: var(--accent3);
+  width: 80px; text-align: right; flex-shrink: 0;
+}
+input[type="range"] {
+  flex: 1; -webkit-appearance: none; appearance: none;
+  height: 4px; background: var(--surface2);
+  border-radius: 2px; outline: none; cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 16px; height: 16px;
+  border-radius: 50%; background: var(--accent);
+  box-shadow: 0 0 8px rgba(232,168,74,0.5);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.25);
+  box-shadow: 0 0 14px rgba(232,168,74,0.7);
+}
 
-  .prices-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
-    gap: 12px;
-  }
+/* ══════════════════════════════
+   BUTTONS
+══════════════════════════════ */
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #1a1208; border: none;
+  font-family: 'Sora', sans-serif; font-size: 0.9rem;
+  font-weight: 700; cursor: pointer;
+  padding: 13px 36px; border-radius: 10px;
+  transition: transform 0.18s, box-shadow 0.18s;
+  box-shadow: 0 3px 18px rgba(232,168,74,0.28);
+  letter-spacing: 0.02em;
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 28px rgba(232,168,74,0.42);
+}
+.btn-primary:active { transform: translateY(0); }
+.btn-secondary {
+  background: var(--surface); color: var(--white);
+  border: 1px solid rgba(255,255,255,0.1);
+  font-family: 'DM Sans', sans-serif; font-size: 0.85rem;
+  font-weight: 600; cursor: pointer;
+  padding: 10px 22px; border-radius: 10px;
+  transition: background 0.18s, border-color 0.18s;
+}
+.btn-secondary:hover { background: var(--surface2); border-color: rgba(255,255,255,0.18); }
+.btn-danger {
+  background: rgba(248,113,113,0.12);
+  color: var(--red); border: 1px solid rgba(248,113,113,0.25);
+  font-family: 'DM Sans', sans-serif; font-size: 0.85rem;
+  font-weight: 600; cursor: pointer;
+  padding: 10px 22px; border-radius: 10px;
+  transition: background 0.18s;
+}
+.btn-danger:hover { background: rgba(248,113,113,0.2); }
 
-  /* RUN BUTTON */
-  .run-wrap { text-align: center; }
-  .btn-run {
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: #1a1218; border: none;
-    font-family: 'Sora', sans-serif; font-size: 1rem;
-    font-weight: 700; cursor: pointer;
-    padding: 16px 52px; border-radius: 12px;
-    transition: transform 0.2s, box-shadow 0.2s;
-    box-shadow: 0 4px 24px rgba(200,169,126,0.3);
-    letter-spacing: 0.02em;
-  }
-  .btn-run:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 32px rgba(200,169,126,0.45);
-  }
-  .btn-run:active { transform: translateY(0); }
+/* ══════════════════════════════
+   LIVE SIMULATION PANEL
+══════════════════════════════ */
+.sim-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 18px;
+}
+.sim-controls-panel {
+  display: flex; flex-direction: column; gap: 14px;
+}
 
-  /* RESULTS */
-  #results { display: none; flex-direction: column; gap: 24px; }
-  #results.show { display: flex; }
+/* Store Canvas */
+.store-canvas-wrap {
+  background: var(--floor);
+  border: 1px solid var(--border);
+  border-radius: 14px; overflow: hidden;
+  position: relative;
+  height: 420px;
+}
+#storeCanvas {
+  width: 100%; height: 100%;
+  display: block;
+}
+.canvas-overlay-top {
+  position: absolute; top: 0; left: 0; right: 0;
+  padding: 12px 16px;
+  background: linear-gradient(to bottom, rgba(15,14,13,0.85), transparent);
+  display: flex; justify-content: space-between; align-items: center;
+  pointer-events: none;
+}
+.sim-status-badge {
+  font-family: 'DM Mono', monospace; font-size: 0.72rem;
+  padding: 4px 12px; border-radius: 20px;
+  font-weight: 500;
+}
+.sim-status-badge.running {
+  background: rgba(74,222,128,0.15);
+  color: var(--green);
+  border: 1px solid rgba(74,222,128,0.3);
+}
+.sim-status-badge.idle {
+  background: rgba(138,127,116,0.15);
+  color: var(--muted);
+  border: 1px solid rgba(138,127,116,0.2);
+}
+.sim-status-badge.paused {
+  background: rgba(251,191,36,0.15);
+  color: var(--yellow);
+  border: 1px solid rgba(251,191,36,0.3);
+}
+.sim-timer {
+  font-family: 'DM Mono', monospace; font-size: 0.78rem;
+  color: var(--muted);
+}
 
-  /* Summary */
-  .summary-row {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
-  }
-  .summary-box {
-    background: var(--surface); border-radius: 12px;
-    padding: 20px 22px; border: 1px solid var(--border); text-align: center;
-  }
-  .s-label {
-    font-size: 0.7rem; color: var(--muted);
-    text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px;
-  }
-  .s-value {
-    font-family: 'Sora', sans-serif;
-    font-size: 1.45rem; font-weight: 700;
-  }
-  .c-green  { color: var(--green); }
-  .c-red    { color: var(--red); }
-  .c-yellow { color: var(--yellow); }
+/* Live Stat Meters */
+.live-stats {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
+.live-stat {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 11px; padding: 14px 16px;
+}
+.ls-label {
+  font-size: 0.68rem; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.07em;
+  margin-bottom: 4px;
+}
+.ls-value {
+  font-family: 'Sora', sans-serif;
+  font-size: 1.45rem; font-weight: 700;
+  line-height: 1;
+}
+.ls-sub { font-size: 0.7rem; color: var(--muted); margin-top: 3px; }
 
-  /* Table */
-  .table-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 0.87rem; }
-  thead th {
-    background: rgba(139,109,212,0.15); color: var(--muted);
-    padding: 12px 14px; text-align: center; font-weight: 600;
-    font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
-    border-bottom: 1px solid var(--border);
-  }
-  tbody tr { transition: background 0.15s; }
-  tbody tr:hover { background: rgba(255,255,255,0.025); }
-  tbody td {
-    padding: 13px 14px; text-align: center;
-    border-bottom: 1px solid var(--border); color: var(--white);
-  }
-  .badge {
-    padding: 4px 10px; border-radius: 100px;
-    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em;
-  }
-  .badge-profit { background: rgba(34,197,94,0.12);  color: #86efac; }
-  .badge-loss   { background: rgba(239,68,68,0.12);  color: #fca5a5; }
-  .badge-even   { background: rgba(250,204,21,0.12); color: #fde68a; }
-  .best-row td:first-child { border-left: 2px solid var(--accent); }
+/* Profit Meter */
+.profit-meter-wrap {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px; padding: 20px;
+}
+.profit-meter-title {
+  font-size: 0.72rem; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.07em;
+  margin-bottom: 10px;
+}
+.profit-bar-track {
+  height: 20px; border-radius: 10px;
+  background: var(--surface);
+  position: relative; overflow: hidden;
+}
+.profit-bar-fill {
+  height: 100%; border-radius: 10px;
+  transition: width 0.4s ease, background 0.4s ease;
+  min-width: 0%;
+}
+.profit-bar-fill.positive { background: linear-gradient(90deg, #15803d, var(--green)); }
+.profit-bar-fill.negative { background: linear-gradient(90deg, #991b1b, var(--red)); }
+.profit-bar-label {
+  display: flex; justify-content: space-between;
+  margin-top: 6px;
+}
+.profit-bar-val {
+  font-family: 'Sora', sans-serif; font-weight: 700;
+  font-size: 1.15rem;
+}
+.profit-bar-val.pos { color: var(--green); }
+.profit-bar-val.neg { color: var(--red); }
 
-  /* Insights */
-  .insights-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .insight-box {
-    background: var(--surface); border-radius: 12px;
-    padding: 18px 20px; border: 1px solid var(--border);
-    display: flex; align-items: flex-start; gap: 12px;
-  }
-  .insight-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 2px; }
-  .insight-label {
-    font-size: 0.7rem; color: var(--muted);
-    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px;
-  }
-  .insight-val {
-    font-family: 'Sora', sans-serif;
-    font-size: 0.92rem; font-weight: 600;
-  }
+/* Queue visual */
+.queue-visual {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px; padding: 16px;
+}
+.queue-title {
+  font-size: 0.72rem; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.07em;
+  margin-bottom: 10px;
+}
+.queue-dots {
+  display: flex; flex-wrap: wrap; gap: 5px;
+  min-height: 32px;
+}
+.q-dot {
+  width: 18px; height: 18px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px;
+  transition: all 0.3s;
+  animation: popIn 0.25s ease;
+}
+@keyframes popIn {
+  from { transform: scale(0); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.q-dot.waiting { background: rgba(96,165,250,0.2); border: 1px solid rgba(96,165,250,0.4); }
+.q-dot.served  { background: rgba(74,222,128,0.2); border: 1px solid rgba(74,222,128,0.4); }
 
-  /* Charts */
-  .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .chart-box {
-    background: var(--surface); border-radius: 12px;
-    padding: 20px; border: 1px solid var(--border);
-  }
-  .chart-box.wide { grid-column: 1 / -1; }
-  .chart-label {
-    font-size: 0.72rem; color: var(--muted);
-    text-transform: uppercase; letter-spacing: 0.06em;
-    margin-bottom: 14px; font-weight: 600;
-  }
+/* Sim Controls */
+.sim-ctrl-row {
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
 
-  /* FOOTER */
-  .footer {
-    border-top: 1px solid var(--border);
-    padding: 28px 60px;
-    display: flex; justify-content: space-between; align-items: center;
-    font-size: 0.8rem; color: var(--muted);
-  }
+/* Event Log */
+.event-log {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px; padding: 16px;
+  height: 130px; overflow-y: auto;
+}
+.event-log-title {
+  font-size: 0.68rem; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.07em;
+  margin-bottom: 8px;
+}
+.log-entry {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem; color: var(--muted);
+  line-height: 1.8;
+  border-left: 2px solid var(--surface2);
+  padding-left: 8px; margin-bottom: 2px;
+  animation: slideIn 0.2s ease;
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.log-entry.good { border-left-color: var(--green); color: rgba(74,222,128,0.8); }
+.log-entry.bad  { border-left-color: var(--red);   color: rgba(248,113,113,0.8); }
+.log-entry.info { border-left-color: var(--accent); color: rgba(232,168,74,0.8); }
 
-  /* ANIMATIONS */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  .fade-up { animation: fadeUp 0.45s ease both; }
+/* ══════════════════════════════
+   RESULTS SECTION
+══════════════════════════════ */
+.results-section { display: none; }
+.results-section.show { display: block; }
 
-  /* RESPONSIVE */
-  @media (max-width: 768px) {
-    nav, .hero, .main, .footer { padding-left: 20px; padding-right: 20px; }
-    .inputs-grid { grid-template-columns: 1fr; }
-    .summary-row { grid-template-columns: 1fr 1fr; }
-    .insights-row, .charts-grid { grid-template-columns: 1fr; }
-    .chart-box.wide { grid-column: 1; }
-    .scenario-header { flex-direction: column; align-items: flex-start; gap: 12px; }
-  }
+.summary-grid {
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 14px;
+  margin-bottom: 20px;
+}
+.stat-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px 20px;
+  text-align: center;
+}
+.stat-box-icon { font-size: 1.3rem; margin-bottom: 6px; }
+.stat-box-label {
+  font-size: 0.68rem; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.07em;
+  margin-bottom: 6px;
+}
+.stat-box-value {
+  font-family: 'Sora', sans-serif;
+  font-size: 1.35rem; font-weight: 700;
+}
+.c-green { color: var(--green); }
+.c-red   { color: var(--red); }
+.c-yellow { color: var(--yellow); }
+.c-accent { color: var(--accent); }
+
+/* Table */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th {
+  font-size: 0.7rem; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  padding: 10px 16px; text-align: left;
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+}
+td {
+  padding: 13px 16px; font-size: 0.88rem;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  font-family: 'DM Mono', monospace;
+}
+tr.best-row td { background: rgba(232,168,74,0.05); }
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 20px;
+  font-family: 'DM Sans', monospace; font-size: 0.72rem; font-weight: 600;
+}
+.badge-profit { background: rgba(74,222,128,0.12); color: var(--green); border: 1px solid rgba(74,222,128,0.25); }
+.badge-loss   { background: rgba(248,113,113,0.12); color: var(--red);   border: 1px solid rgba(248,113,113,0.25); }
+.badge-even   { background: rgba(251,191,36,0.12);  color: var(--yellow); border: 1px solid rgba(251,191,36,0.25); }
+
+/* Charts */
+.charts-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  margin-top: 16px;
+}
+.chart-full { grid-column: 1 / -1; }
+.chart-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px;
+}
+.chart-label {
+  font-size: 0.72rem; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.07em;
+  margin-bottom: 14px; font-weight: 600;
+}
+
+/* Insights */
+.insights-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+  margin-bottom: 20px;
+}
+.insight-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px 20px;
+  display: flex; gap: 14px; align-items: flex-start;
+}
+.insight-icon { font-size: 1.5rem; flex-shrink: 0; }
+.insight-label {
+  font-size: 0.68rem; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.07em;
+  margin-bottom: 5px;
+}
+.insight-val { font-size: 0.9rem; font-weight: 600; }
+.insight-desc { font-size: 0.78rem; color: var(--muted); margin-top: 3px; }
+
+/* Scenarios row */
+.scenario-header {
+  display: flex; align-items: center;
+  justify-content: space-between; margin-bottom: 18px;
+}
+.scenario-ctrl {
+  display: flex; align-items: center; gap: 10px;
+}
+.scenario-ctrl label {
+  font-size: 0.72rem; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.scenario-ctrl input {
+  width: 58px; background: var(--surface);
+  border: 1.5px solid rgba(255,255,255,0.08);
+  border-radius: 8px; padding: 8px 10px;
+  color: var(--white); font-family: 'DM Mono', monospace;
+  font-size: 0.88rem; text-align: center; outline: none;
+  transition: border-color 0.2s;
+}
+.scenario-ctrl input:focus { border-color: var(--accent); }
+.btn-set {
+  background: rgba(232,168,74,0.12);
+  border: 1px solid var(--border2);
+  color: var(--accent); border-radius: 8px;
+  padding: 8px 16px; font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem; font-weight: 600;
+  cursor: pointer; transition: background 0.18s;
+}
+.btn-set:hover { background: rgba(232,168,74,0.22); }
+.prices-grid {
+  display: grid; grid-template-columns: repeat(auto-fill,minmax(170px,1fr)); gap: 12px;
+}
+
+/* Run controls row */
+.run-row { display: flex; gap: 12px; align-items: center; justify-content: center; }
+
+/* ══════════════════════════════
+   REAL-TIME CHART
+══════════════════════════════ */
+.live-chart-wrap {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px; padding: 18px;
+  margin-top: 14px;
+}
+
+/* ══════════════════════════════
+   PROPOSAL / INFO TAB
+══════════════════════════════ */
+.proposal-grid { display: flex; flex-direction: column; gap: 18px; }
+.prop-section { }
+.prop-title {
+  font-family: 'Sora', sans-serif; font-weight: 700;
+  font-size: 1.15rem; color: var(--white);
+  margin-bottom: 4px; display: flex; align-items: center; gap: 10px;
+}
+.prop-sub {
+  font-size: 0.85rem; color: var(--muted); line-height: 1.7;
+}
+.prop-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.prop-list li {
+  display: flex; gap: 12px; align-items: flex-start;
+  font-size: 0.88rem; color: var(--muted); line-height: 1.6;
+}
+.prop-list li::before {
+  content: '→'; color: var(--accent); flex-shrink: 0;
+  font-family: 'DM Mono', monospace;
+}
+.prop-compare {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px;
+  margin-top: 16px;
+}
+.comp-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px;
+  text-align: center;
+}
+.comp-icon { font-size: 1.8rem; margin-bottom: 8px; }
+.comp-title {
+  font-family: 'Sora', sans-serif; font-weight: 700;
+  font-size: 0.85rem; margin-bottom: 6px;
+}
+.comp-desc { font-size: 0.75rem; color: var(--muted); line-height: 1.6; }
+.comp-box.ours { border-color: var(--border2); background: rgba(232,168,74,0.05); }
+
+/* ══════════════════════════════
+   BREAK EVEN CALCULATOR
+══════════════════════════════ */
+.bep-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+}
+.bep-result {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 12px; padding: 20px;
+  text-align: center;
+}
+.bep-result-label {
+  font-size: 0.68rem; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  margin-bottom: 6px;
+}
+.bep-result-val {
+  font-family: 'Sora', sans-serif;
+  font-size: 1.8rem; font-weight: 800;
+  color: var(--accent);
+}
+
+/* ══════════════════════════════
+   FOOTER
+══════════════════════════════ */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 24px 48px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 0.78rem; color: var(--muted);
+}
+.footer-logo {
+  font-family: 'Sora', sans-serif; font-weight: 700;
+  color: var(--white); display: flex; align-items: center; gap: 8px;
+}
+
+/* ══════════════════════════════
+   UTILITY / ANIMATIONS
+══════════════════════════════ */
+.fade-up {
+  animation: fadeUp 0.4s ease both;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.divider {
+  height: 1px; background: var(--border);
+  margin: 6px 0 18px;
+}
+.section-row {
+  display: flex; justify-content: space-between;
+  align-items: center; margin-bottom: 18px;
+}
+.tag {
+  font-family: 'DM Mono', monospace; font-size: 0.7rem;
+  color: var(--muted); background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px; padding: 2px 8px;
+}
+
+/* Scrollbar for log */
+.event-log::-webkit-scrollbar { width: 4px; }
+.event-log::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 2px; }
+
+/* responsive tweaks */
+@media (max-width: 780px) {
+  nav { padding: 16px 20px; }
+  .hero { padding: 40px 20px 32px; }
+  .main { padding: 0 20px 60px; }
+  .sim-layout { grid-template-columns: 1fr; }
+  .inputs-grid { grid-template-columns: 1fr 1fr; }
+  .summary-grid { grid-template-columns: 1fr 1fr; }
+  .charts-grid { grid-template-columns: 1fr; }
+  .prop-compare { grid-template-columns: 1fr; }
+  footer { flex-direction: column; gap: 8px; text-align: center; }
+}
 </style>
 </head>
 <body>
@@ -317,76 +718,269 @@
 <!-- NAV -->
 <nav>
   <div class="nav-logo">
-    <div class="logo-dot"></div>
+    <div class="logo-icon">🏪</div>
     PriceSim
   </div>
-  <div class="nav-right">· Modeling and Simulation · BSCS 601</div>
+  <div class="nav-badge">v3.0 — LIVE SIM</div>
+  <div class="nav-right">Business Modeling and Simulation · BSCS 601</div>
 </nav>
 
 <!-- HERO -->
 <div class="hero">
-  <div class="hero-badge"><span></span> Business Modeling &amp; Simulation</div>
-  <h1>What-if <em>Pricing Scenario</em><br/>Simulation</h1>
-  <p>Model how different selling prices affect your retail store's revenue, profit, and margin. Test multiple scenarios instantly.</p>
+  <div class="hero-eyebrow">
+    <div class="pulse-dot"></div>
+    Retail Pricing Simulation Engine
+  </div>
+  <h1>What-If Pricing <em>Scenarios</em><br>Come Alive in Real Time</h1>
+  <p class="hero-sub">Watch customers walk into your simulated store, pick products off shelves, queue at the counter, and drive your profit meter — all powered by your pricing decisions.</p>
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('sim')">🏪 Live Sim</button>
+    <button class="tab-btn" onclick="switchTab('calc')">📊 Calculator</button>
+    <button class="tab-btn" onclick="switchTab('proposal')">📄 Proposal</button>
+  </div>
 </div>
 
-<!-- MAIN -->
 <div class="main">
 
-  <!-- Product Details -->
+<!-- ══════════════════════════════
+     TAB 1: LIVE SIMULATION
+══════════════════════════════ -->
+<div class="section-panel active" id="tab-sim">
+
+  <div class="sim-layout">
+
+    <!-- Left Controls -->
+    <div class="sim-controls-panel">
+
+      <div class="card">
+        <div class="card-top-bar"></div>
+        <div class="card-title">⚙️ Store Config</div>
+
+        <div class="slider-field">
+          <div class="slider-row">
+            <span class="slider-label">Selling Price (PHP)</span>
+            <span class="slider-val" id="sv-price">₱80</span>
+          </div>
+          <input type="range" id="sl-price" min="10" max="500" step="5" value="80" oninput="updateSlider('price',this.value,'₱','')" />
+        </div>
+
+        <div class="slider-field">
+          <div class="slider-row">
+            <span class="slider-label">Cost per Unit (PHP)</span>
+            <span class="slider-val" id="sv-cost">₱45</span>
+          </div>
+          <input type="range" id="sl-cost" min="5" max="490" step="5" value="45" oninput="updateSlider('cost',this.value,'₱','')" />
+        </div>
+
+        <div class="slider-field">
+          <div class="slider-row">
+            <span class="slider-label">Customer Spawn Rate</span>
+            <span class="slider-val" id="sv-spawn">3/s</span>
+          </div>
+          <input type="range" id="sl-spawn" min="1" max="10" step="1" value="3" oninput="updateSlider('spawn',this.value,'','\/s')" />
+        </div>
+
+        <div class="slider-field">
+          <div class="slider-row">
+            <span class="slider-label">Checkout Speed</span>
+            <span class="slider-val" id="sv-speed">2/s</span>
+          </div>
+          <input type="range" id="sl-speed" min="1" max="8" step="1" value="2" oninput="updateSlider('speed',this.value,'','\/s')" />
+        </div>
+
+        <div class="slider-field">
+          <div class="slider-row">
+            <span class="slider-label">Buy Probability</span>
+            <span class="slider-val" id="sv-prob">70%</span>
+          </div>
+          <input type="range" id="sl-prob" min="10" max="100" step="5" value="70" oninput="updateSlider('prob',this.value,'','%')" />
+        </div>
+
+        <div class="slider-field">
+          <div class="slider-row">
+            <span class="slider-label">Fixed Overhead (PHP)</span>
+            <span class="slider-val" id="sv-fixed">₱500</span>
+          </div>
+          <input type="range" id="sl-fixed" min="0" max="5000" step="100" value="500" oninput="updateSlider('fixed',this.value,'₱','')" />
+        </div>
+
+        <div class="divider"></div>
+        <div class="sim-ctrl-row">
+          <button class="btn-primary" id="btnRun" onclick="startSim()">▶ Run Simulation</button>
+          <button class="btn-secondary" id="btnPause" onclick="pauseSim()" disabled>⏸ Pause</button>
+          <button class="btn-danger" id="btnReset" onclick="resetSim()">↺ Reset</button>
+        </div>
+      </div>
+
+      <!-- Queue visual -->
+      <div class="queue-visual">
+        <div class="queue-title">🧍 Customer Queue</div>
+        <div class="queue-dots" id="queue-dots"></div>
+      </div>
+
+      <!-- Profit Meter -->
+      <div class="profit-meter-wrap">
+        <div class="profit-meter-title">💰 Live Profit Meter</div>
+        <div class="profit-bar-track">
+          <div class="profit-bar-fill positive" id="profit-bar" style="width:0%"></div>
+        </div>
+        <div class="profit-bar-label">
+          <span id="profit-bar-val" class="profit-bar-val pos">₱0.00</span>
+          <span style="font-size:0.72rem;color:var(--muted)" id="profit-bar-cap">Target: ₱—</span>
+        </div>
+      </div>
+
+      <!-- Event Log -->
+      <div class="event-log">
+        <div class="event-log-title">📋 Event Log</div>
+        <div id="event-log-entries"></div>
+      </div>
+
+    </div>
+
+    <!-- Right: Store Canvas + Live Stats -->
+    <div>
+      <!-- Live Stats -->
+      <div class="live-stats" style="margin-bottom:14px;">
+        <div class="live-stat">
+          <div class="ls-label">Customers Entered</div>
+          <div class="ls-value c-accent" id="ls-entered">0</div>
+          <div class="ls-sub">Total visitors</div>
+        </div>
+        <div class="live-stat">
+          <div class="ls-label">Units Sold</div>
+          <div class="ls-value c-green" id="ls-sold">0</div>
+          <div class="ls-sub">Purchased items</div>
+        </div>
+        <div class="live-stat">
+          <div class="ls-label">Revenue</div>
+          <div class="ls-value c-accent" id="ls-revenue">₱0</div>
+          <div class="ls-sub">Gross sales</div>
+        </div>
+        <div class="live-stat">
+          <div class="ls-label">Net Profit</div>
+          <div class="ls-value" id="ls-profit">₱0</div>
+          <div class="ls-sub" id="ls-margin">Margin: 0%</div>
+        </div>
+      </div>
+
+      <!-- Store Canvas -->
+      <div class="store-canvas-wrap">
+        <canvas id="storeCanvas"></canvas>
+        <div class="canvas-overlay-top">
+          <span class="sim-status-badge idle" id="sim-status-badge">● IDLE</span>
+          <span class="sim-timer" id="sim-timer">T+0s</span>
+        </div>
+      </div>
+
+      <!-- Real-Time Revenue Chart -->
+      <div class="live-chart-wrap">
+        <div class="chart-label">📈 Live Revenue vs Cost (every 5 seconds)</div>
+        <canvas id="liveChart" height="80"></canvas>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     TAB 2: CALCULATOR
+══════════════════════════════ -->
+<div class="section-panel" id="tab-calc">
+
+  <!-- Inputs -->
   <div class="card">
-    <div class="card-title">📦 Product Details</div>
+    <div class="card-top-bar"></div>
+    <div class="card-title">📦 Product Inputs</div>
     <div class="inputs-grid">
       <div class="field">
-        <label>Cost per Unit (PHP)</label>
-        <input type="number" id="cost" placeholder="e.g. 50" min="0.01" step="0.01"/>
+        <label>Unit Cost (PHP)</label>
+        <input type="number" id="cost" placeholder="e.g. 45" min="0.01" step="0.01"/>
       </div>
       <div class="field">
-        <label>Number of Units Sold</label>
+        <label>Units to Sell</label>
         <input type="number" id="units" placeholder="e.g. 100" min="1" step="1"/>
       </div>
       <div class="field">
-        <label>Fixed Costs / Expenses (PHP)</label>
-        <input type="number" id="fixed" placeholder="e.g. 2000" min="0.01" step="0.01"/>
+        <label>Fixed Overhead (PHP)</label>
+        <input type="number" id="fixed" placeholder="e.g. 500" min="0" step="0.01"/>
       </div>
     </div>
   </div>
 
-  <!-- Pricing Scenarios -->
+  <!-- Break-Even -->
   <div class="card">
+    <div class="card-top-bar"></div>
+    <div class="card-title">⚖️ Break-Even Calculator</div>
+    <div class="bep-row">
+      <div class="inputs-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="field">
+          <label>Selling Price (PHP)</label>
+          <input type="number" id="bep-price" placeholder="e.g. 80" min="0.01" step="0.01" oninput="calcBEP()"/>
+        </div>
+        <div class="field">
+          <label>Variable Cost / Unit</label>
+          <input type="number" id="bep-vc" placeholder="e.g. 45" min="0.01" step="0.01" oninput="calcBEP()"/>
+        </div>
+      </div>
+      <div style="display:flex; gap:14px;">
+        <div class="bep-result">
+          <div class="bep-result-label">Break-Even Units</div>
+          <div class="bep-result-val" id="bep-units">—</div>
+        </div>
+        <div class="bep-result">
+          <div class="bep-result-label">Break-Even Revenue</div>
+          <div class="bep-result-val" id="bep-rev">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scenario Prices -->
+  <div class="card">
+    <div class="card-top-bar"></div>
     <div class="scenario-header">
-      <div class="card-title" style="margin-bottom:0">💰 Pricing Scenarios</div>
+      <div class="card-title" style="margin-bottom:0">🎯 Pricing Scenarios</div>
       <div class="scenario-ctrl">
-        <label>Scenarios:</label>
-        <input type="number" id="num-sc" value="3" min="1" max="10" oninput="buildPrices()"/>
-        <button class="btn-set" onclick="buildPrices()">Set</button>
+        <label># Scenarios</label>
+        <input type="number" id="num-sc" value="4" min="1" max="10"/>
+        <button class="btn-set" onclick="buildPrices()">Generate</button>
       </div>
     </div>
     <div class="prices-grid" id="prices-grid"></div>
   </div>
 
   <!-- Run -->
-  <div class="run-wrap">
-    <button class="btn-run" onclick="simulate()">▶ &nbsp; Run Simulation</button>
+  <div class="run-row" style="margin-bottom:24px;">
+    <button class="btn-primary" style="padding:15px 56px;font-size:1rem;" onclick="simulate()">▶  Run Analysis</button>
+    <button class="btn-secondary" onclick="autoFill()">✨ Auto-fill Example</button>
   </div>
 
-  <!-- Results -->
-  <div id="results">
+  <!-- RESULTS -->
+  <div id="calc-results" class="results-section">
 
     <div class="card fade-up">
+      <div class="card-top-bar"></div>
       <div class="card-title">📋 Summary</div>
-      <div class="summary-row" id="summary-row"></div>
+      <div class="summary-grid" id="summary-row"></div>
     </div>
 
     <div class="card fade-up">
-      <div class="card-title">📊 Results Table</div>
+      <div class="card-top-bar"></div>
+      <div class="card-title">🎯 Insights</div>
+      <div class="insights-grid" id="insights-row"></div>
+    </div>
+
+    <div class="card fade-up">
+      <div class="card-top-bar"></div>
+      <div class="card-title">📊 Scenario Results</div>
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
               <th>Scenario</th>
-              <th>Selling Price</th>
-              <th>Total Revenue</th>
+              <th>Price (PHP)</th>
+              <th>Revenue</th>
               <th>Profit / Loss</th>
               <th>Margin</th>
               <th>Status</th>
@@ -398,19 +992,15 @@
     </div>
 
     <div class="card fade-up">
-      <div class="card-title">🎯 Insights</div>
-      <div class="insights-row" id="insights-row"></div>
-    </div>
-
-    <div class="card fade-up">
-      <div class="card-title">📈 Charts</div>
+      <div class="card-top-bar"></div>
+      <div class="card-title">📈 Visual Analysis</div>
       <div class="charts-grid">
-        <div class="chart-box wide">
-          <div class="chart-label">Revenue vs Total Cost</div>
-          <canvas id="chart-rev" height="90"></canvas>
+        <div class="chart-box chart-full">
+          <div class="chart-label">Revenue vs Total Cost per Scenario</div>
+          <canvas id="chart-rev" height="80"></canvas>
         </div>
         <div class="chart-box">
-          <div class="chart-label">Profit / Loss per Scenario</div>
+          <div class="chart-label">Profit / Loss</div>
           <canvas id="chart-profit" height="180"></canvas>
         </div>
         <div class="chart-box">
@@ -423,174 +1013,875 @@
   </div>
 </div>
 
-<!-- FOOTER -->
-<div class="footer">
-  <div style="display:flex;align-items:center;gap:8px">
-    <div class="logo-dot"></div>
-    <span style="font-family:'Sora',sans-serif;color:var(--white);font-weight:700">PriceSim</span>
+<!-- ══════════════════════════════
+     TAB 3: PROPOSAL
+══════════════════════════════ -->
+<div class="section-panel" id="tab-proposal">
+
+  <div class="card fade-up" style="margin-bottom:20px;">
+    <div class="card-top-bar"></div>
+    <div class="card-title">📄 Project Proposal</div>
+
+    <div class="proposal-grid">
+
+      <div class="prop-section">
+        <div class="prop-title">🏪 Project Title</div>
+        <p class="prop-sub" style="font-size:1.05rem;color:var(--white);font-weight:600;margin-top:4px;">
+          PriceSim v3: Interactive Retail Pricing Simulation with Live Store Visualization
+        </p>
+        <p class="prop-sub" style="margin-top:6px;">
+          IT2032 Modeling and Simulation — John Raphael C. Alido, BSCS 601
+        </p>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="prop-section">
+        <div class="prop-title">📌 Overview</div>
+        <p class="prop-sub">
+          PriceSim v3 is an interactive browser-based simulation tool that models retail pricing decisions in a live animated store environment. Unlike static spreadsheet tools, this system visually simulates customer behavior — customers spawn, browse shelves, queue at the counter, and purchase items — while real-time metrics update instantly with every slider adjustment.
+        </p>
+      </div>
+
+      <div class="prop-section">
+        <div class="prop-title">🎯 Objectives</div>
+        <ul class="prop-list">
+          <li>Demonstrate how pricing decisions directly affect profit through an animated, observable simulation</li>
+          <li>Model customer arrival rates, queue dynamics, and purchase probability as controllable variables</li>
+          <li>Provide a multi-scenario calculator to compare up to 10 pricing strategies simultaneously</li>
+          <li>Include a break-even analysis tool to identify minimum viable pricing</li>
+          <li>Visualize real-time revenue, margin, and profit accumulation as the simulation runs</li>
+        </ul>
+      </div>
+
+      <div class="prop-section">
+        <div class="prop-title">🔬 Simulation Model</div>
+        <p class="prop-sub">
+          The live simulation models a discrete-event retail environment with the following parameters:
+        </p>
+        <ul class="prop-list" style="margin-top:10px;">
+          <li><strong style="color:var(--white)">Customer Arrival (λ)</strong> — Poisson-like spawn rate; customers appear at adjustable intervals</li>
+          <li><strong style="color:var(--white)">Purchase Probability (p)</strong> — Each customer decides to buy based on configurable probability, simulating price sensitivity</li>
+          <li><strong style="color:var(--white)">Service Rate (μ)</strong> — Checkout speed determines how fast the queue clears</li>
+          <li><strong style="color:var(--white)">Queue Dynamics</strong> — Customers wait in visible queue, then get served; overflow customers abandon purchase</li>
+          <li><strong style="color:var(--white)">Profit Accumulation</strong> — Each sale: Revenue += Price; Cost += (Cost/Unit + prorated Overhead)</li>
+        </ul>
+      </div>
+
+      <div class="prop-section">
+        <div class="prop-title">🏆 Comparison with Other Groups</div>
+        <div class="prop-compare">
+          <div class="comp-box">
+            <div class="comp-icon">🚂</div>
+            <div class="comp-title">Group A — Train Corridor</div>
+            <div class="comp-desc">Animated station queue with load balancing, zones, and a train that bypasses on overflow</div>
+          </div>
+          <div class="comp-box">
+            <div class="comp-icon">🚌</div>
+            <div class="comp-title">Group B — BusTerminal.sim</div>
+            <div class="comp-desc">3D terminal view with dispatch strategy sliders, throughput, profit/loss, and hourly charts</div>
+          </div>
+          <div class="comp-box ours">
+            <div class="comp-icon">🏪</div>
+            <div class="comp-title">Ours — PriceSim v3 ★</div>
+            <div class="comp-desc">Live animated store floor + pricing engine + multi-scenario calculator + break-even + real-time charts</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="prop-section">
+        <div class="prop-title">⚙️ Technical Stack</div>
+        <ul class="prop-list">
+          <li>Pure HTML5, CSS3, Vanilla JavaScript — zero dependencies beyond Chart.js</li>
+          <li>HTML5 Canvas API for animated store floor rendering at ~30fps</li>
+          <li>Chart.js for real-time and analytical charts</li>
+          <li>CSS custom properties + keyframe animations for UI motion</li>
+          <li>Runs entirely client-side; no server or internet connection required after load</li>
+        </ul>
+      </div>
+
+      <div class="prop-section">
+        <div class="prop-title">📊 Key Features</div>
+        <ul class="prop-list">
+          <li>Live animated store floor — customers spawn, walk to shelves, queue, pay, and exit</li>
+          <li>6 real-time sliders — price, cost, spawn rate, checkout speed, buy probability, overhead</li>
+          <li>Live profit meter with animated fill bar</li>
+          <li>Customer queue visualization with colored dots</li>
+          <li>Event log showing every significant sim event in real time</li>
+          <li>Multi-scenario pricing calculator with comparison table and 3 chart types</li>
+          <li>Break-even calculator updating live as you type</li>
+          <li>Pause / Resume / Reset simulation controls</li>
+          <li>Live 5-second revenue vs cost rolling chart</li>
+        </ul>
+      </div>
+
+    </div>
   </div>
-  <div>John Raphael C. Alido &nbsp;·&nbsp; BSCS 601 &nbsp;·&nbsp; IT2032 Modeling and Simulation</div>
-  <div>Version 3 — Browser App</div>
 </div>
 
+</div><!-- /main -->
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">
+    <div style="width:20px;height:20px;background:var(--accent);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;color:#1a1208;">🏪</div>
+    PriceSim
+  </div>
+  <div>John Raphael C. Alido &nbsp;·&nbsp; BSCS 601 &nbsp;·&nbsp; IT2032 Modeling and Simulation</div>
+  <div class="tag">Version 3.0 — Live Simulation Engine</div>
+</footer>
+
 <script>
-  function buildPrices() {
-    const n   = Math.min(Math.max(parseInt(document.getElementById('num-sc').value) || 1, 1), 10);
-    const div = document.getElementById('prices-grid');
-    div.innerHTML = '';
-    for (let i = 0; i < n; i++) {
-      div.innerHTML += `
-        <div class="field">
-          <label>Scenario ${i + 1} Price (PHP)</label>
-          <input type="number" id="price-${i}" placeholder="e.g. ${60 + i * 20}" min="0.01" step="0.01"/>
-        </div>`;
-    }
-  }
+/* ══════════════════════════════════════
+   TAB SWITCHING
+══════════════════════════════════════ */
+function switchTab(name) {
+  document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
 
-  function php(v) {
-    return 'PHP ' + Math.abs(v).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  }
+/* ══════════════════════════════════════
+   SLIDER UPDATERS
+══════════════════════════════════════ */
+function updateSlider(id, val, pre, suf) {
+  document.getElementById('sv-' + id).textContent = pre + val + suf;
+  if (simRunning) recalcSim();
+}
 
-  const charts = {};
-  function destroyChart(id) {
-    if (charts[id]) { charts[id].destroy(); delete charts[id]; }
-  }
+/* ══════════════════════════════════════
+   LIVE SIMULATION ENGINE
+══════════════════════════════════════ */
+const canvas = document.getElementById('storeCanvas');
+const ctx = canvas.getContext('2d');
 
-  const chartOpts = {
-    plugins: { legend: { labels: { color: '#8a9bc4', font: { family: 'DM Sans', size: 11 } } } },
-    scales: {
-      x: { ticks: { color: '#8a9bc4', font: { family: 'DM Sans', size: 11 } }, grid: { color: 'rgba(255,255,255,0.05)' } },
-      y: { ticks: { color: '#8a9bc4', font: { family: 'DM Sans', size: 11 } }, grid: { color: 'rgba(255,255,255,0.05)' } }
-    }
+let simRunning = false, simPaused = false;
+let simInterval = null, spawnInterval = null, serveInterval = null, chartInterval = null;
+let simTime = 0;
+let totalEntered = 0, totalSold = 0, totalRevenue = 0;
+let customers = [];
+let queue = [];
+let nextId = 0;
+const MAX_QUEUE = 25;
+
+// Colors for customers
+const CUSTOMER_COLORS = ['#60a5fa','#a78bfa','#34d399','#f472b6','#fbbf24','#e8a84a'];
+
+// Canvas sizing
+function resizeCanvas() {
+  const wrap = canvas.parentElement;
+  canvas.width = wrap.clientWidth;
+  canvas.height = wrap.clientHeight;
+}
+
+// Store layout constants
+function layout() {
+  const W = canvas.width, H = canvas.height;
+  return {
+    W, H,
+    entranceX: W * 0.08,
+    shelfArea: { x: W * 0.1, y: H * 0.15, w: W * 0.55, h: H * 0.5 },
+    counterX: W * 0.75,
+    counterY: H * 0.5,
+    exitX: W * 0.92,
+    floorY: H * 0.82
   };
+}
 
-  function simulate() {
-    const cost  = parseFloat(document.getElementById('cost').value);
-    const units = parseInt(document.getElementById('units').value);
-    const fixed = parseFloat(document.getElementById('fixed').value);
-    const n     = parseInt(document.getElementById('num-sc').value) || 1;
-    const prices = [];
+// Draw the store
+function drawStore() {
+  const L = layout();
+  const { W, H } = L;
 
-    for (let i = 0; i < n; i++) {
-      const v = parseFloat(document.getElementById(`price-${i}`)?.value);
-      prices.push(v);
-    }
+  // Background floor
+  ctx.fillStyle = '#18140f';
+  ctx.fillRect(0, 0, W, H);
 
-    if ([cost, units, fixed, ...prices].some(v => isNaN(v) || v <= 0)) {
-      alert('Please fill in all fields with valid numbers greater than 0.');
-      return;
-    }
-
-    const totalCost = (cost * units) + fixed;
-    const revenues  = prices.map(p => p * units);
-    const profits   = revenues.map(r => r - totalCost);
-    const margins   = profits.map((p, i) => revenues[i] ? (p / revenues[i]) * 100 : 0);
-    const bestIdx   = profits.indexOf(Math.max(...profits));
-    const worstIdx  = profits.indexOf(Math.min(...profits));
-    const labels    = prices.map((p, i) => `S${i + 1}  PHP ${p.toLocaleString()}`);
-
-    // Summary
-    document.getElementById('summary-row').innerHTML = `
-      <div class="summary-box">
-        <div class="s-label">Total Cost</div>
-        <div class="s-value c-red">${php(totalCost)}</div>
-      </div>
-      <div class="summary-box">
-        <div class="s-label">Best Profit</div>
-        <div class="s-value c-green">${profits[bestIdx] < 0 ? '−' : ''}${php(profits[bestIdx])}</div>
-      </div>
-      <div class="summary-box">
-        <div class="s-label">Best Margin</div>
-        <div class="s-value c-yellow">${margins[bestIdx].toFixed(1)}%</div>
-      </div>`;
-
-    // Table
-    let rows = '';
-    prices.forEach((price, i) => {
-      const prof  = profits[i];
-      const isBest = i === bestIdx;
-      const sc    = prof > 0 ? 'badge-profit' : (prof === 0 ? 'badge-even' : 'badge-loss');
-      const st    = prof > 0 ? '✅ PROFIT'    : (prof === 0 ? '⚠️ BREAK EVEN' : '❌ LOSS');
-      const pc    = prof > 0 ? 'c-green'      : (prof === 0 ? 'c-yellow' : 'c-red');
-      rows += `
-        <tr ${isBest ? 'class="best-row"' : ''}>
-          <td style="font-family:'Sora',sans-serif;font-weight:700">${isBest ? '★ ' : ''}S${i + 1}</td>
-          <td>${php(price)}</td>
-          <td>${php(revenues[i])}</td>
-          <td class="${pc}" style="font-weight:600">${prof < 0 ? '−' : ''}${php(prof)}</td>
-          <td>${margins[i].toFixed(1)}%</td>
-          <td><span class="badge ${sc}">${st}</span></td>
-        </tr>`;
-    });
-    document.getElementById('table-body').innerHTML = rows;
-
-    // Insights
-    document.getElementById('insights-row').innerHTML = `
-      <div class="insight-box">
-        <div class="insight-icon">🏆</div>
-        <div>
-          <div class="insight-label">Best Scenario</div>
-          <div class="insight-val c-green">S${bestIdx+1} @ ${php(prices[bestIdx])} → ${profits[bestIdx]<0?'−':''}${php(profits[bestIdx])} profit</div>
-        </div>
-      </div>
-      <div class="insight-box">
-        <div class="insight-icon">⚠️</div>
-        <div>
-          <div class="insight-label">Worst Scenario</div>
-          <div class="insight-val c-red">S${worstIdx+1} @ ${php(prices[worstIdx])} → ${profits[worstIdx]<0?'−':''}${php(profits[worstIdx])}</div>
-        </div>
-      </div>`;
-
-    // Charts
-    destroyChart('rev'); destroyChart('profit'); destroyChart('margin');
-
-    charts['rev'] = new Chart(document.getElementById('chart-rev'), {
-      type: 'bar',
-      data: {
-        labels,
-        datasets: [
-          { label: 'Revenue',    data: revenues,               backgroundColor: 'rgba(139,109,212,0.75)', borderRadius: 6 },
-          { label: 'Total Cost', data: Array(n).fill(totalCost), backgroundColor: 'rgba(239,68,68,0.65)',   borderRadius: 6 }
-        ]
-      },
-      options: { ...chartOpts, responsive: true }
-    });
-
-    charts['profit'] = new Chart(document.getElementById('chart-profit'), {
-      type: 'bar',
-      data: {
-        labels,
-        datasets: [{
-          data: profits,
-          backgroundColor: profits.map(p => p >= 0 ? 'rgba(34,197,94,0.75)' : 'rgba(239,68,68,0.75)'),
-          borderRadius: 6
-        }]
-      },
-      options: { ...chartOpts, responsive: true, plugins: { legend: { display: false } } }
-    });
-
-    charts['margin'] = new Chart(document.getElementById('chart-margin'), {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [{
-          data: margins,
-          borderColor: '#c8a97e',
-          backgroundColor: 'rgba(200,169,126,0.15)',
-          fill: true, tension: 0.4, pointRadius: 6,
-          pointBackgroundColor: '#c8a97e',
-          pointBorderColor: '#1e2a45', pointBorderWidth: 2
-        }]
-      },
-      options: { ...chartOpts, responsive: true, plugins: { legend: { display: false } } }
-    });
-
-    const res = document.getElementById('results');
-    res.classList.add('show');
-    setTimeout(() => res.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+  // Tile pattern
+  ctx.strokeStyle = 'rgba(255,255,255,0.025)';
+  ctx.lineWidth = 0.5;
+  const tileSize = 40;
+  for (let x = 0; x < W; x += tileSize) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+  }
+  for (let y = 0; y < H; y += tileSize) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
   }
 
+  // Shelves
+  const shelfColor = '#3d2e1e';
+  const shelfHighlight = '#5c4530';
+  const shelves = [
+    { x: L.shelfArea.x + 10, y: L.shelfArea.y + 10, w: L.shelfArea.w * 0.42, h: 28 },
+    { x: L.shelfArea.x + 10, y: L.shelfArea.y + 55, w: L.shelfArea.w * 0.42, h: 28 },
+    { x: L.shelfArea.x + L.shelfArea.w * 0.55, y: L.shelfArea.y + 10, w: L.shelfArea.w * 0.42, h: 28 },
+    { x: L.shelfArea.x + L.shelfArea.w * 0.55, y: L.shelfArea.y + 55, w: L.shelfArea.w * 0.42, h: 28 },
+    { x: L.shelfArea.x + 10, y: L.shelfArea.y + 110, w: L.shelfArea.w * 0.9, h: 28 },
+    { x: L.shelfArea.x + 10, y: L.shelfArea.y + 155, w: L.shelfArea.w * 0.65, h: 28 },
+  ];
+
+  shelves.forEach(s => {
+    ctx.fillStyle = shelfColor;
+    ctx.beginPath();
+    ctx.roundRect(s.x, s.y, s.w, s.h, 4);
+    ctx.fill();
+    ctx.fillStyle = shelfHighlight;
+    ctx.fillRect(s.x + 4, s.y + 4, s.w - 8, 5);
+
+    // Product dots on shelves
+    const numProducts = Math.floor(s.w / 14);
+    for (let i = 0; i < numProducts; i++) {
+      const productColors = ['#e8a84a','#f472b6','#60a5fa','#4ade80','#a78bfa'];
+      ctx.fillStyle = productColors[i % productColors.length];
+      ctx.beginPath();
+      ctx.arc(s.x + 10 + i * 14, s.y + 14, 4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  });
+
+  // Shelf label
+  ctx.fillStyle = 'rgba(138,127,116,0.5)';
+  ctx.font = '10px DM Mono, monospace';
+  ctx.fillText('SHELVES / PRODUCT DISPLAY', L.shelfArea.x + 10, L.shelfArea.y - 4);
+
+  // Checkout Counter
+  const counterW = 60, counterH = 80;
+  const cX = L.counterX - counterW/2, cY = L.counterY - counterH/2;
+  ctx.fillStyle = '#2a1f12';
+  ctx.beginPath();
+  ctx.roundRect(cX, cY, counterW, counterH, 8);
+  ctx.fill();
+  ctx.strokeStyle = '#c8861e';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // Counter label
+  ctx.fillStyle = '#e8a84a';
+  ctx.font = 'bold 9px Sora, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('CHECKOUT', L.counterX, cY - 6);
+  ctx.fillText('💰', L.counterX, L.counterY + 4);
+  ctx.textAlign = 'left';
+
+  // Queue line
+  ctx.strokeStyle = 'rgba(232,168,74,0.2)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(L.counterX - counterW/2 - 10, L.counterY);
+  ctx.lineTo(L.shelfArea.x + L.shelfArea.w + 20, L.counterY);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Entrance arrow
+  ctx.fillStyle = 'rgba(74,222,128,0.4)';
+  ctx.font = '18px sans-serif';
+  ctx.fillText('→', L.entranceX - 20, H * 0.5);
+  ctx.fillStyle = 'rgba(138,127,116,0.4)';
+  ctx.font = '9px DM Mono, monospace';
+  ctx.fillText('ENTRANCE', L.entranceX - 28, H * 0.5 + 16);
+
+  // Exit arrow
+  ctx.fillStyle = 'rgba(248,113,113,0.4)';
+  ctx.font = '18px sans-serif';
+  ctx.fillText('→', L.exitX - 10, H * 0.5);
+  ctx.fillStyle = 'rgba(138,127,116,0.4)';
+  ctx.font = '9px DM Mono, monospace';
+  ctx.fillText('EXIT', L.exitX - 8, H * 0.5 + 16);
+}
+
+// Customer states: 'entering' → 'browsing' → 'queuing' → 'serving' → 'exiting'
+function spawnCustomer() {
+  if (!simRunning || simPaused) return;
+  const L = layout();
+  const color = CUSTOMER_COLORS[nextId % CUSTOMER_COLORS.length];
+
+  // Random target shelf position
+  const targetX = L.shelfArea.x + 20 + Math.random() * (L.shelfArea.w - 40);
+  const targetY = L.shelfArea.y + 20 + Math.random() * (L.shelfArea.h - 40);
+
+  customers.push({
+    id: nextId++,
+    x: L.entranceX,
+    y: L.H * 0.5,
+    targetX, targetY,
+    color,
+    state: 'entering',
+    browseTimer: 60 + Math.random() * 80,
+    willBuy: Math.random() * 100 < parseInt(document.getElementById('sl-prob').value),
+    size: 7 + Math.random() * 3
+  });
+  totalEntered++;
+  document.getElementById('ls-entered').textContent = totalEntered;
+}
+
+function updateCustomers() {
+  if (!simRunning || simPaused) return;
+  const L = layout();
+  const speed = 1.8;
+
+  customers.forEach(c => {
+    if (c.state === 'entering') {
+      // Walk to shelf
+      const dx = c.targetX - c.x, dy = c.targetY - c.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < 3) {
+        c.state = 'browsing';
+      } else {
+        c.x += (dx/dist) * speed;
+        c.y += (dy/dist) * speed;
+      }
+    }
+    else if (c.state === 'browsing') {
+      c.browseTimer--;
+      if (c.browseTimer <= 0) {
+        if (c.willBuy && queue.length < MAX_QUEUE) {
+          c.state = 'queuing';
+          queue.push(c.id);
+          addLog(`Customer #${c.id} joining queue`, 'info');
+        } else {
+          c.state = 'exiting';
+          if (!c.willBuy) addLog(`Customer #${c.id} left without buying`, 'bad');
+          else addLog(`Queue full — Customer #${c.id} abandoned`, 'bad');
+        }
+      }
+    }
+    else if (c.state === 'queuing') {
+      // Walk to counter queue position
+      const qPos = queue.indexOf(c.id);
+      const targetX = L.counterX - 35 - qPos * 22;
+      const targetY = L.counterY;
+      const dx = targetX - c.x, dy = targetY - c.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist > 2) {
+        c.x += (dx/dist) * speed;
+        c.y += (dy/dist) * speed;
+      }
+    }
+    else if (c.state === 'serving') {
+      // Walk to counter
+      const dx = L.counterX - 40 - c.x, dy = L.counterY - c.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist > 3) {
+        c.x += (dx/dist) * speed;
+        c.y += (dy/dist) * speed;
+      }
+    }
+    else if (c.state === 'exiting') {
+      c.x += speed * 1.5;
+    }
+  });
+
+  // Remove customers that have exited
+  customers = customers.filter(c => c.x < L.W + 20);
+}
+
+function drawCustomers() {
+  customers.forEach(c => {
+    // Shadow
+    ctx.beginPath();
+    ctx.arc(c.x + 2, c.y + 2, c.size, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    ctx.fill();
+
+    // Body
+    ctx.beginPath();
+    ctx.arc(c.x, c.y, c.size, 0, Math.PI * 2);
+    ctx.fillStyle = c.color;
+    ctx.fill();
+
+    // State indicator ring
+    let ringColor = 'rgba(255,255,255,0.2)';
+    if (c.state === 'queuing' || c.state === 'serving') ringColor = 'rgba(232,168,74,0.7)';
+    if (c.state === 'exiting') ringColor = 'rgba(248,113,113,0.5)';
+    ctx.strokeStyle = ringColor;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Emoji on customer
+    ctx.font = `${c.size * 1.4}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('👤', c.x, c.y);
+    ctx.textBaseline = 'alphabetic';
+  });
+  ctx.textAlign = 'left';
+}
+
+// Serve customers from queue
+let serveTimer = 0;
+function tryServeQueue() {
+  if (!simRunning || simPaused || queue.length === 0) return;
+  const speed = parseInt(document.getElementById('sl-speed').value);
+  serveTimer++;
+  if (serveTimer < Math.ceil(30 / speed)) return;
+  serveTimer = 0;
+
+  const frontId = queue[0];
+  const customer = customers.find(c => c.id === frontId);
+  if (customer) {
+    customer.state = 'serving';
+    // after a moment, complete sale
+    setTimeout(() => {
+      if (!simRunning) return;
+      const price = parseInt(document.getElementById('sl-price').value);
+      const costPer = parseInt(document.getElementById('sl-cost').value);
+      totalSold++;
+      totalRevenue += price;
+      document.getElementById('ls-sold').textContent = totalSold;
+      document.getElementById('ls-revenue').textContent = '₱' + totalRevenue.toLocaleString();
+      updateProfit();
+      addLog(`✓ Sale! ₱${price} (margin: ₱${price - costPer})`, 'good');
+      customer.state = 'exiting';
+      queue.shift();
+      updateQueueDots();
+    }, 800);
+  }
+}
+
+function updateProfit() {
+  const price = parseInt(document.getElementById('sl-price').value);
+  const costPer = parseInt(document.getElementById('sl-cost').value);
+  const fixed = parseInt(document.getElementById('sl-fixed').value);
+  const profit = (totalRevenue) - (totalSold * costPer) - fixed;
+  const margin = totalRevenue > 0 ? ((profit / totalRevenue) * 100).toFixed(1) : 0;
+
+  const profitEl = document.getElementById('ls-profit');
+  profitEl.textContent = (profit < 0 ? '-₱' : '₱') + Math.abs(profit).toLocaleString();
+  profitEl.className = 'ls-value ' + (profit >= 0 ? 'c-green' : 'c-red');
+  document.getElementById('ls-margin').textContent = `Margin: ${margin}%`;
+
+  // Profit bar
+  const maxProfit = price * 100;
+  const pct = Math.min(Math.abs(profit) / maxProfit * 100, 100);
+  const bar = document.getElementById('profit-bar');
+  bar.style.width = pct + '%';
+  bar.className = 'profit-bar-fill ' + (profit >= 0 ? 'positive' : 'negative');
+
+  const pv = document.getElementById('profit-bar-val');
+  pv.textContent = (profit < 0 ? '-₱' : '₱') + Math.abs(profit).toLocaleString('en-PH',{minimumFractionDigits:2});
+  pv.className = 'profit-bar-val ' + (profit >= 0 ? 'pos' : 'neg');
+  document.getElementById('profit-bar-cap').textContent = `Target: ₱${(price * 50).toLocaleString()}`;
+}
+
+function updateQueueDots() {
+  const container = document.getElementById('queue-dots');
+  const totalWaiting = queue.length;
+  let html = '';
+  for (let i = 0; i < Math.min(totalWaiting, MAX_QUEUE); i++) {
+    html += `<div class="q-dot waiting">🧍</div>`;
+  }
+  container.innerHTML = html || '<span style="font-size:0.75rem;color:var(--muted)">Queue empty</span>';
+}
+
+function addLog(msg, type = '') {
+  const container = document.getElementById('event-log-entries');
+  const t = String(simTime).padStart(3, '0');
+  const el = document.createElement('div');
+  el.className = `log-entry ${type}`;
+  el.textContent = `[${t}s] ${msg}`;
+  container.prepend(el);
+  // keep max 50 entries
+  while (container.children.length > 50) container.removeChild(container.lastChild);
+}
+
+// Main render loop
+let animId = null;
+function render() {
+  resizeCanvas();
+  drawStore();
+  updateCustomers();
+  tryServeQueue();
+  drawCustomers();
+  animId = requestAnimationFrame(render);
+}
+
+// Simulation controls
+function startSim() {
+  if (simRunning && !simPaused) return;
+  if (simPaused) {
+    simPaused = false;
+    document.getElementById('sim-status-badge').textContent = '● RUNNING';
+    document.getElementById('sim-status-badge').className = 'sim-status-badge running';
+    document.getElementById('btnPause').textContent = '⏸ Pause';
+    addLog('Simulation resumed', 'info');
+    return;
+  }
+
+  simRunning = true;
+  simPaused = false;
+  document.getElementById('btnRun').disabled = true;
+  document.getElementById('btnPause').disabled = false;
+  document.getElementById('sim-status-badge').textContent = '● RUNNING';
+  document.getElementById('sim-status-badge').className = 'sim-status-badge running';
+
+  addLog('Simulation started', 'info');
+
+  // Timer ticker
+  simInterval = setInterval(() => {
+    if (!simPaused) {
+      simTime++;
+      document.getElementById('sim-timer').textContent = `T+${simTime}s`;
+    }
+  }, 1000);
+
+  // Spawn customers based on rate
+  function scheduleSpawn() {
+    if (!simRunning) return;
+    const rate = parseInt(document.getElementById('sl-spawn').value);
+    const delay = Math.max(200, 1000 / rate);
+    if (!simPaused) spawnCustomer();
+    spawnInterval = setTimeout(scheduleSpawn, delay);
+  }
+  scheduleSpawn();
+
+  // Chart update every 5s
+  chartInterval = setInterval(() => {
+    if (!simPaused) updateLiveChart();
+  }, 5000);
+}
+
+function pauseSim() {
+  if (!simRunning) return;
+  simPaused = !simPaused;
+  const badge = document.getElementById('sim-status-badge');
+  const btn = document.getElementById('btnPause');
+  if (simPaused) {
+    badge.textContent = '● PAUSED';
+    badge.className = 'sim-status-badge paused';
+    btn.textContent = '▶ Resume';
+    addLog('Simulation paused', '');
+  } else {
+    badge.textContent = '● RUNNING';
+    badge.className = 'sim-status-badge running';
+    btn.textContent = '⏸ Pause';
+    addLog('Simulation resumed', 'info');
+  }
+}
+
+function resetSim() {
+  simRunning = false;
+  simPaused = false;
+  clearInterval(simInterval);
+  clearTimeout(spawnInterval);
+  clearInterval(chartInterval);
+  simTime = 0; totalEntered = 0; totalSold = 0; totalRevenue = 0;
+  customers = []; queue = [];
+
+  document.getElementById('btnRun').disabled = false;
+  document.getElementById('btnPause').disabled = true;
+  document.getElementById('btnPause').textContent = '⏸ Pause';
+  document.getElementById('sim-status-badge').textContent = '● IDLE';
+  document.getElementById('sim-status-badge').className = 'sim-status-badge idle';
+  document.getElementById('sim-timer').textContent = 'T+0s';
+  document.getElementById('ls-entered').textContent = '0';
+  document.getElementById('ls-sold').textContent = '0';
+  document.getElementById('ls-revenue').textContent = '₱0';
+  document.getElementById('ls-profit').textContent = '₱0';
+  document.getElementById('ls-profit').className = 'ls-value';
+  document.getElementById('ls-margin').textContent = 'Margin: 0%';
+  document.getElementById('profit-bar').style.width = '0%';
+  document.getElementById('profit-bar-val').textContent = '₱0.00';
+  document.getElementById('queue-dots').innerHTML = '';
+  document.getElementById('event-log-entries').innerHTML = '';
+  liveRevData = []; liveCostData = []; liveLabels = [];
+  if (liveChart) { liveChart.data.labels = []; liveChart.data.datasets[0].data = []; liveChart.data.datasets[1].data = []; liveChart.update(); }
+  addLog('System reset', '');
+}
+
+function recalcSim() {
+  // called on slider change while running — just updates display
+  updateProfit();
+}
+
+/* ══════════════════════════════════════
+   LIVE CHART
+══════════════════════════════════════ */
+let liveRevData = [], liveCostData = [], liveLabels = [];
+let liveChart = null;
+
+function initLiveChart() {
+  const ctx2 = document.getElementById('liveChart').getContext('2d');
+  liveChart = new Chart(ctx2, {
+    type: 'line',
+    data: {
+      labels: liveLabels,
+      datasets: [
+        {
+          label: 'Revenue',
+          data: liveRevData,
+          borderColor: '#e8a84a',
+          backgroundColor: 'rgba(232,168,74,0.1)',
+          fill: true, tension: 0.4, pointRadius: 4,
+          pointBackgroundColor: '#e8a84a'
+        },
+        {
+          label: 'Total Cost',
+          data: liveCostData,
+          borderColor: '#f87171',
+          backgroundColor: 'rgba(248,113,113,0.07)',
+          fill: true, tension: 0.4, pointRadius: 4,
+          pointBackgroundColor: '#f87171'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { labels: { color: '#8a7f74', font: { family: 'DM Sans', size: 11 } } }
+      },
+      scales: {
+        x: { ticks: { color: '#8a7f74', font: { family: 'DM Mono', size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        y: { ticks: { color: '#8a7f74', font: { family: 'DM Mono', size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' } }
+      }
+    }
+  });
+}
+
+function updateLiveChart() {
+  const costPer = parseInt(document.getElementById('sl-cost').value);
+  const fixed = parseInt(document.getElementById('sl-fixed').value);
+  const totalCost = totalSold * costPer + fixed;
+  liveLabels.push(`T+${simTime}s`);
+  liveRevData.push(totalRevenue);
+  liveCostData.push(totalCost);
+  if (liveLabels.length > 20) {
+    liveLabels.shift(); liveRevData.shift(); liveCostData.shift();
+  }
+  liveChart.update();
+}
+
+/* ══════════════════════════════════════
+   CALCULATOR ENGINE
+══════════════════════════════════════ */
+function buildPrices() {
+  const n = Math.min(Math.max(parseInt(document.getElementById('num-sc').value)||1,1),10);
+  const div = document.getElementById('prices-grid');
+  div.innerHTML = '';
+  for (let i = 0; i < n; i++) {
+    div.innerHTML += `
+      <div class="field">
+        <label>Scenario ${i+1} Price (PHP)</label>
+        <input type="number" id="price-${i}" placeholder="e.g. ${60+i*20}" min="0.01" step="0.01"/>
+      </div>`;
+  }
+}
+
+function autoFill() {
+  document.getElementById('cost').value = 45;
+  document.getElementById('units').value = 100;
+  document.getElementById('fixed').value = 500;
+  document.getElementById('num-sc').value = 5;
   buildPrices();
+  const prices = [55,70,85,100,120];
+  prices.forEach((p,i) => {
+    const el = document.getElementById('price-' + i);
+    if (el) el.value = p;
+  });
+}
+
+function php(v) {
+  return '₱' + Math.abs(v).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+const charts = {};
+function destroyChart(id) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+}
+
+const darkChartOpts = {
+  plugins: { legend: { labels: { color: '#8a7f74', font: { family: 'DM Sans', size: 11 } } } },
+  scales: {
+    x: { ticks: { color: '#8a7f74', font: { family: 'DM Mono', size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+    y: { ticks: { color: '#8a7f74', font: { family: 'DM Mono', size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' } }
+  }
+};
+
+function simulate() {
+  const cost  = parseFloat(document.getElementById('cost').value);
+  const units = parseInt(document.getElementById('units').value);
+  const fixed = parseFloat(document.getElementById('fixed').value);
+  const n     = parseInt(document.getElementById('num-sc').value)||1;
+  const prices = [];
+
+  for (let i = 0; i < n; i++) {
+    const v = parseFloat(document.getElementById(`price-${i}`)?.value);
+    prices.push(v);
+  }
+
+  if ([cost,units,fixed,...prices].some(v => isNaN(v)||v<=0)) {
+    alert('Please fill in all fields with positive numbers.');
+    return;
+  }
+
+  const totalCost = (cost*units) + fixed;
+  const revenues  = prices.map(p => p*units);
+  const profits   = revenues.map(r => r-totalCost);
+  const margins   = profits.map((p,i) => revenues[i] ? (p/revenues[i])*100 : 0);
+  const bestIdx   = profits.indexOf(Math.max(...profits));
+  const worstIdx  = profits.indexOf(Math.min(...profits));
+  const labels    = prices.map((p,i) => `S${i+1} (₱${p})`);
+
+  // Summary
+  const profitableCount = profits.filter(p => p > 0).length;
+  document.getElementById('summary-row').innerHTML = `
+    <div class="stat-box">
+      <div class="stat-box-icon">💸</div>
+      <div class="stat-box-label">Total Cost</div>
+      <div class="stat-box-value c-red">${php(totalCost)}</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-icon">🏆</div>
+      <div class="stat-box-label">Best Profit</div>
+      <div class="stat-box-value c-green">${profits[bestIdx]<0?'-':''}${php(profits[bestIdx])}</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-icon">📊</div>
+      <div class="stat-box-label">Best Margin</div>
+      <div class="stat-box-value c-yellow">${margins[bestIdx].toFixed(1)}%</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-box-icon">✅</div>
+      <div class="stat-box-label">Profitable Scenarios</div>
+      <div class="stat-box-value c-accent">${profitableCount} / ${n}</div>
+    </div>`;
+
+  // Table
+  let rows = '';
+  prices.forEach((price,i) => {
+    const prof = profits[i];
+    const isBest = i === bestIdx;
+    const sc  = prof>0?'badge-profit':(prof===0?'badge-even':'badge-loss');
+    const st  = prof>0?'✅ PROFIT':(prof===0?'⚠️ BREAK EVEN':'❌ LOSS');
+    const pc  = prof>0?'c-green':(prof===0?'c-yellow':'c-red');
+    rows += `
+      <tr ${isBest?'class="best-row"':''}>
+        <td style="font-family:'Sora',sans-serif;font-weight:700">${isBest?'★ ':''}S${i+1}</td>
+        <td>${php(price)}</td>
+        <td>${php(revenues[i])}</td>
+        <td class="${pc}" style="font-weight:600">${prof<0?'-':''}${php(prof)}</td>
+        <td>${margins[i].toFixed(1)}%</td>
+        <td><span class="badge ${sc}">${st}</span></td>
+      </tr>`;
+  });
+  document.getElementById('table-body').innerHTML = rows;
+
+  // Insights
+  const bepPrice = cost + (fixed / units);
+  document.getElementById('insights-row').innerHTML = `
+    <div class="insight-box">
+      <div class="insight-icon">🏆</div>
+      <div>
+        <div class="insight-label">Best Scenario</div>
+        <div class="insight-val c-green">S${bestIdx+1} @ ${php(prices[bestIdx])}</div>
+        <div class="insight-desc">Profit: ${profits[bestIdx]<0?'-':''}${php(profits[bestIdx])} · Margin: ${margins[bestIdx].toFixed(1)}%</div>
+      </div>
+    </div>
+    <div class="insight-box">
+      <div class="insight-icon">⚠️</div>
+      <div>
+        <div class="insight-label">Worst Scenario</div>
+        <div class="insight-val c-red">S${worstIdx+1} @ ${php(prices[worstIdx])}</div>
+        <div class="insight-desc">Profit: ${profits[worstIdx]<0?'-':''}${php(profits[worstIdx])} · Margin: ${margins[worstIdx].toFixed(1)}%</div>
+      </div>
+    </div>
+    <div class="insight-box">
+      <div class="insight-icon">⚖️</div>
+      <div>
+        <div class="insight-label">Break-Even Price</div>
+        <div class="insight-val c-yellow">${php(bepPrice)} / unit</div>
+        <div class="insight-desc">Minimum price to cover all costs at ${units} units</div>
+      </div>
+    </div>
+    <div class="insight-box">
+      <div class="insight-icon">📈</div>
+      <div>
+        <div class="insight-label">Max Revenue Potential</div>
+        <div class="insight-val c-accent">${php(Math.max(...revenues))}</div>
+        <div class="insight-desc">At price ${php(prices[revenues.indexOf(Math.max(...revenues))])}</div>
+      </div>
+    </div>`;
+
+  // Charts
+  destroyChart('rev'); destroyChart('profit'); destroyChart('margin');
+
+  charts['rev'] = new Chart(document.getElementById('chart-rev'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label:'Revenue',    data:revenues,                  backgroundColor:'rgba(232,168,74,0.75)', borderRadius:6 },
+        { label:'Total Cost', data:Array(n).fill(totalCost),  backgroundColor:'rgba(248,113,113,0.55)', borderRadius:6 }
+      ]
+    },
+    options: { ...darkChartOpts, responsive:true }
+  });
+
+  charts['profit'] = new Chart(document.getElementById('chart-profit'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        data: profits,
+        backgroundColor: profits.map(p => p>=0?'rgba(74,222,128,0.75)':'rgba(248,113,113,0.75)'),
+        borderRadius: 6
+      }]
+    },
+    options: { ...darkChartOpts, responsive:true, plugins:{ legend:{ display:false } } }
+  });
+
+  charts['margin'] = new Chart(document.getElementById('chart-margin'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data: margins,
+        borderColor:'#e8a84a',
+        backgroundColor:'rgba(232,168,74,0.12)',
+        fill:true, tension:0.4, pointRadius:6,
+        pointBackgroundColor:'#e8a84a',
+        pointBorderColor:'#1c1917', pointBorderWidth:2
+      }]
+    },
+    options: { ...darkChartOpts, responsive:true, plugins:{ legend:{ display:false } } }
+  });
+
+  const res = document.getElementById('calc-results');
+  res.classList.add('show');
+  setTimeout(() => res.scrollIntoView({ behavior:'smooth', block:'start' }), 100);
+}
+
+/* ══════════════════════════════════════
+   BREAK-EVEN LIVE CALC
+══════════════════════════════════════ */
+function calcBEP() {
+  const price = parseFloat(document.getElementById('bep-price').value);
+  const vc    = parseFloat(document.getElementById('bep-vc').value);
+  const fixed = parseFloat(document.getElementById('fixed').value) || 500;
+
+  if (isNaN(price)||isNaN(vc)||price<=vc) {
+    document.getElementById('bep-units').textContent = '—';
+    document.getElementById('bep-rev').textContent = '—';
+    return;
+  }
+  const bepUnits = fixed / (price - vc);
+  document.getElementById('bep-units').textContent = Math.ceil(bepUnits).toLocaleString();
+  document.getElementById('bep-rev').textContent = php(Math.ceil(bepUnits) * price);
+}
+
+/* ══════════════════════════════════════
+   INIT
+══════════════════════════════════════ */
+window.addEventListener('load', () => {
+  resizeCanvas();
+  buildPrices();
+  initLiveChart();
+  render(); // start canvas render loop
+  addLog('System ready — click Run to start', 'info');
+});
+
+window.addEventListener('resize', resizeCanvas);
 </script>
 </body>
 </html>
